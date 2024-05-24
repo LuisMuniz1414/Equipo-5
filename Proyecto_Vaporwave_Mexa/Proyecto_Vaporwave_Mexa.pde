@@ -4,8 +4,10 @@ SoundFile sound;
 import gifAnimation.*;
 PImage taco;
 
-boolean changeColor = false;
-boolean changeSun = false;
+//valores de degradado
+boolean changeColor = true;
+boolean changeSun = true;
+float smX, smY;
 
 //Valores de VAPORWAVEMEXA
 Gif vapor;
@@ -25,7 +27,10 @@ float pirX= width/2;
 float pirY= 550;
 boolean showingPiramide = true;
 
+//valores de error
 PImage err;
+ArrayList<PVector> positions;
+boolean allowErrorInteraction = true;
 
 //Valores de Simi
 PImage simi1;
@@ -121,6 +126,9 @@ void setup() {
   fullScreen();
   frameRate(300);
 
+  smX= width/2;
+  smY = height/2;
+
   cha1 = loadImage("ChalCuerpo.png");
   cha2= loadImage("ChalOjos.png");
   pirS= loadImage("PiramideDelSol.png");
@@ -128,6 +136,7 @@ void setup() {
   ray1 = loadImage("Quetz1.png");
   ray2 = loadImage("Quetz2.png");
   err = loadImage("Error.png");
+  positions = new ArrayList<PVector>();
   pix = loadImage("PixilFrame.png");
   pyx = loadImage("CalacasChidasPaint.png");
   oxxo1 = loadImage("oxxo1.png");
@@ -163,25 +172,24 @@ void draw() {
   smooth();
   background(255, 0, 255);
 
-  float l = width /255;
+  float l = width / 255.0;
   for (int i = 0; i < width; i++) {
     if (changeColor) {
-      stroke(0, 255, 255, 255 - i / l);
+      stroke(0, 0, 255, 255 - i / l);
     } else {
-      stroke(0, 0, 255, 255-i/l);
+      stroke(0, 255, 255, 255 - i / l);
     }
     line(0, i, width, i);
   }
 
   if (changeSun) {
-    ellipse(width/2, height/2, 600, 600);
-    fill(255, random(200), random(255));
-    noStroke();
-  } else {
-    ellipse(width/2, height/2, 600, 600);
     fill(random(255), 255, 255);
-    noStroke();
+  } else {
+    fill(255, random(200), random(255));
   }
+  noStroke();
+  ellipse(smX, smY, 600, 600);
+
   //valores de PixilFrame
   if (showingFirstImagePx) {
     image(pix, pixX, pixY);
@@ -278,28 +286,41 @@ void draw() {
   } else {
     image(simi2, simiX, simiY);
   }
+
+  //valores de error
+  for (PVector pos : positions) {
+    image(err, pos.x, pos.y);
+  }
 }
 
 void mousePressed() {
-  image(err, mouseX, mouseY);
+  //Valores de error
+  if (allowErrorInteraction) {
+    positions.add(new PVector(mouseX, mouseY));
+  }
 
-  //Valores de gardiente
-  changeColor = !changeColor;
-  
-  //valores de ellipse
-  changeSun = !changeSun;
+  //Valores de gardiente y elipse
+  float d = dist(mouseX, mouseY, smX, smY);
+  if (d < 300) {
+    changeColor = !changeColor;
+    changeSun = !changeSun;
+    allowErrorInteraction = true;
+  }
+
   // Valores de VAPORWAVEMEXA
   if (mouseX > vaporX && mouseX < vaporX + vaporWidth && mouseY > vaporY && mouseY < vaporY + vaporHeight) {
     // Calcular el desplazamiento del mouse
     offsetVX = mouseX - vaporX;
     offsetVY = mouseY - vaporY;
     draggingV = true;
+    allowErrorInteraction = false;
   }
 
   //Valores de piramide
   if ((showingPiramide && mouseX > pirX && mouseX < pirX + pirS.width && mouseY > pirY && mouseY < pirY + pirS.height) ||
     (!showingPiramide && mouseX > pirX && mouseX < pirX + pirL.width && mouseY > pirY && mouseY < pirY + pirL.height)) {
-    showingPiramide = !showingPiramide; // Cambiar de imagen
+    showingPiramide = !showingPiramide;
+    allowErrorInteraction = true;
   }
 
   //Valores de Chalchihutlicue
@@ -307,35 +328,42 @@ void mousePressed() {
   if (mouseX > x1 && mouseX < x1 + cha2.width && mouseY > 500 && mouseY < 500 + cha2.height) {
     draggingCh1 = true;
     offsetChX1 = mouseX - x1;
+    allowErrorInteraction = false;
   }
   image(cha2, x2, 500);
   if (mouseX > x2 && mouseX < x2 + cha2.width && mouseY > 500 && mouseY < 500 + cha2.height) {
     draggingCh2 = true;
     offsetChX2 = mouseX - x2;
+    allowErrorInteraction = false;
   }
 
   //valores de Oxxo
   if ((showingFirstImageOx && mouseX > oxxoX && mouseX < oxxoX + oxxo1.width && mouseY > oxxoY && mouseY < oxxoY + oxxo1.height) ||
     (!showingFirstImageOx && mouseX > oxxoX && mouseX < oxxoX + oxxo2.width && mouseY > oxxoY && mouseY < oxxoY + oxxo2.height)) {
     showingFirstImageOx = !showingFirstImageOx;
+    allowErrorInteraction = true;
   }
 
   //valores de Palmas
   if ((showingPalm1 && mouseX > plmx1L && mouseX < plmx1L + plm1.width && mouseY > plmy1L && mouseY < plmy1L + plm1.height) ||
     (!showingPalm1 && mouseX > plmx1L && mouseX < plmx1L + plm1.width && mouseY > plmy1L && mouseY < plmy1L + plm1.height)) {
     showingPalm1 = !showingPalm1;
+    allowErrorInteraction = true;
   }
   if ((showingPalm2 && mouseX > plmx2L && mouseX < plmx2L + plm1.width && mouseY > plmy2L && mouseY < plmy2L + plm1.height) ||
     (!showingPalm2 && mouseX > plmx2L && mouseX < plmx2L + plm1.width && mouseY > plmy2L && mouseY < plmy2L + plm1.height)) {
     showingPalm2 = !showingPalm2;
+    allowErrorInteraction = true;
   }
   if ((showingPalm3 && mouseX > plmx1R && mouseX < plmx1R + plm2.width && mouseY > plmy1R && mouseY < plmy1R + plm2.height) ||
     (!showingPalm3 && mouseX > plmx1R && mouseX < plmx1R + plm2.width && mouseY > plmy1R && mouseY < plmy1R + plm2.height)) {
     showingPalm3 = !showingPalm3;
+    allowErrorInteraction = true;
   }
   if ((showingPalm4 && mouseX > plmx2R && mouseX < plmx2R + plm2.width && mouseY > plmy2R && mouseY < plmy2R + plm2.height) ||
     (!showingPalm4 && mouseX > plmx2R && mouseX < plmx2R + plm2.width && mouseY > plmy2R && mouseY < plmy2R + plm2.height)) {
     showingPalm4 = !showingPalm4;
+    allowErrorInteraction = true;
   }
 
   //valores de axoGif
@@ -343,6 +371,7 @@ void mousePressed() {
     draggingAx = true;
     offsetAxX = mouseX - axoX;
     offsetAxY = mouseY - axoY;
+    allowErrorInteraction = false;
   }
 
   //valores de CocaColaGif
@@ -350,6 +379,7 @@ void mousePressed() {
     draggingCoca = true;
     offsetCoX = mouseX - cocaX;
     offsetCoY = mouseY - cocaY;
+    allowErrorInteraction = false;
   }
 
   //Valores de PixilFrame
@@ -358,6 +388,7 @@ void mousePressed() {
     offsetPxX = mouseX - pixX;
     offsetPxY = mouseY - pixY;
     showingFirstImagePx = !showingFirstImagePx;
+    allowErrorInteraction = false;
   }
 
   //Valores de Simi
@@ -366,53 +397,75 @@ void mousePressed() {
     offsetSmX = mouseX - simiX;
     offsetSmY = mouseY - simiY;
     showingSimi = !showingSimi;
+    allowErrorInteraction = false;
   }
 }
 
 void mouseDragged() {
+  //valores de erros
+  if (allowErrorInteraction) {
+    positions.add(new PVector(mouseX, mouseY));
+  }
+
   //Valores de VAPORWAVEMEXA
   if (draggingV) {
     vaporX = mouseX - offsetVX;
     vaporY = mouseY - offsetVY;
+    vapor.pause();
+    allowErrorInteraction = false;
   }
 
   //Valores de Chalchihutlicue
   if (draggingCh1) {
     x1 = mouseX - offsetChX1;
+    allowErrorInteraction = false;
   }
 
   if (draggingCh2) {
     x2 = mouseX - offsetChX2;
+    allowErrorInteraction = false;
   }
 
   //valores de AxoGif
   if (draggingAx) {
     axoX = mouseX - offsetAxX;
     axoY = mouseY - offsetAxY;
+    axo.pause();
+    allowErrorInteraction = false;
   }
 
   //valores de CocaColaGif
   if (draggingCoca) {
     cocaX = mouseX - offsetCoX;
     cocaY = mouseY - offsetCoY;
+    coca.pause();
+    allowErrorInteraction = false;
   }
 
   //Valores de PixilFrame
   if (draggingPx) {
     pixX = mouseX - offsetPxX;
     pixY = mouseY - offsetPxY;
+    allowErrorInteraction = false;
   }
 
   //valores de Simi)
   if (draggingSimi) {
     simiX = mouseX - offsetSmX;
     simiY = mouseY - offsetSmY;
+    allowErrorInteraction = false;
   }
 }
 
 void mouseReleased() {
+  //Valores de error
+  if (!allowErrorInteraction) {
+  }
+  positions.clear();
+
   //Valores de VAPORWAVEMEXA
   draggingV=false;
+  vapor.loop();
 
   //valores de Chalchihutlicue
   draggingCh1 = false;
@@ -431,9 +484,11 @@ void mouseReleased() {
 
   //valores de AxoGif
   draggingAx = false;
+  axo.loop();
 
   //valores de CocaColaGif
   draggingCoca = false;
+  coca.loop();
 
   //Valores de PixilFrame
   draggingPx = false;
@@ -443,7 +498,6 @@ void mouseReleased() {
 }
 
 void keyPressed() {
-
   if (key == ' ') {
 
     // Restablecer los valores de VAPORWAVEMEXA
